@@ -118,11 +118,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Sources\BinaryTree.cpp" />
     <ClCompile Include="Sources\Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\BinarySearchTree.h" />
     <ClInclude Include="Headers\BinaryTree.h" />
+    <ClInclude Include="Headers\Common.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
