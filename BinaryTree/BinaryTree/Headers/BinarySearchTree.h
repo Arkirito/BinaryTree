@@ -66,6 +66,7 @@ void BinarySearchTree<T>::_insert(BinaryTreeNode<T> * node, T value)
 		if (this->m_root == nullptr)
 		{
 			this->m_root = node;
+			++this->m_root->Height;
 		}
 	}
 	else
@@ -78,6 +79,7 @@ void BinarySearchTree<T>::_insert(BinaryTreeNode<T> * node, T value)
 			{
 				node->Right = new BinaryTreeNode<T>(value);
 				node->Right->Parent = node;
+				Super::_backpropagateHeight(node);
 			}
 			else
 			{
@@ -90,6 +92,7 @@ void BinarySearchTree<T>::_insert(BinaryTreeNode<T> * node, T value)
 			{
 				node->Left = new BinaryTreeNode<T>(value);
 				node->Left->Parent = node;
+				Super::_backpropagateHeight(node);
 			}
 			else
 			{

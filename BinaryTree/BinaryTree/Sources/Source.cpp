@@ -18,6 +18,8 @@ int main(int argc, char** argv)
 		printf("%d ", node->Value);
 	}
 
+	printf("\n Tree Height: %d", tree.GetHeight());
+
 	std::cin.get();
 	
 	return 0;

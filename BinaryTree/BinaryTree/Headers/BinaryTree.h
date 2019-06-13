@@ -18,6 +18,8 @@ struct BinaryTreeNode
     #define Left Nodes[0]
     #define Right Nodes[1]
 
+	int Height = 0;
+
 	BinaryTreeNode* PushLeft(int value) { }
 };
 
@@ -37,6 +39,8 @@ public:
 
 	void Traversal(std::vector<BinaryTreeNode<T>*>& out);
 
+	int GetHeight();
+
 protected:
 
 	BinaryTreeNode<T>* m_root = nullptr;
@@ -45,6 +49,7 @@ protected:
 
 	void _traversal(BinaryTreeNode<T>* node, std::vector<BinaryTreeNode<T>*>& out);
 	virtual BinaryTreeNode<T>* _find(BinaryTreeNode<T>* node, T value);
+	void _backpropagateHeight(BinaryTreeNode<T>* node);
 };
 
 template<typename T>
@@ -98,6 +103,12 @@ void BinaryTree<T>::Traversal(std::vector<BinaryTreeNode<T>*>& out)
 }
 
 template<typename T>
+inline int BinaryTree<T>::GetHeight()
+{
+	return m_root == nullptr ? 0 : m_root->Height;
+}
+
+template<typename T>
 void BinaryTree<T>::_traversal(BinaryTreeNode<T> * node, std::vector<BinaryTreeNode<T>*>& out)
 {
 	if (node != nullptr)
@@ -135,4 +146,16 @@ BinaryTreeNode<T>* BinaryTree<T>::_find(BinaryTreeNode<T>* node, T value)
 	}
 
 	return nullptr;
+}
+
+template<typename T>
+inline void BinaryTree<T>::_backpropagateHeight(BinaryTreeNode<T>* node)
+{
+	BinaryTreeNode<T>* parent = node->Parent;
+
+	while (parent)
+	{
+		++parent->Height;
+		parent = parent->Parent;
+	}
 }
