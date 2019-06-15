@@ -3,27 +3,21 @@
 
 int main(int argc, char** argv)
 {
-	BinarySearchTree<int> tree(10);
+	BinarySearchTree<int> tree(5);
 
-	tree.Insert(5);
 	tree.Insert(2);
+	tree.Insert(10);
+
+	tree.Insert(1);
+	tree.Insert(3);
+	tree.Insert(7);
 	tree.Insert(15);
-	tree.Insert(-1);
 
-	tree.Remove(10);
-	tree.Remove(-1);
-	tree.Remove(2);
+	tree.Insert(6);
+	tree.Insert(8);
 
-	tree.Insert(20);
-	tree.Insert(-6);
-
-	tree.Remove(101);
-	tree.Remove(-6);
-
-	tree.Insert(11);
-	tree.Insert(12);
-	tree.Insert(13);
-	tree.Insert(-50);
+	tree.Remove(5);
+	tree.Remove(7);
 
 	std::vector<BinaryTreeNode<int>*> traversal;
 	tree.Traversal(traversal);

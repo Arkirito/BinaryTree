@@ -20,6 +20,7 @@ protected:
 
 	void _insert(BinaryTreeNode<T>* node, T value);
 	virtual BinaryTreeNode<T>* _find(BinaryTreeNode<T>* node, T value);
+	virtual void _remove(T value) override;
 };
 
 template<typename T>
@@ -58,8 +59,6 @@ template<typename T>
 void BinarySearchTree<T>::Remove(T value)
 {
 	Super::Remove(value);
-
-	// TODO
 }
 
 template<typename T>
@@ -136,4 +135,71 @@ inline BinaryTreeNode<T>* BinarySearchTree<T>::_find(BinaryTreeNode<T>* node, T 
 	}
 
 	return nullptr;
+}
+
+template<typename T>
+inline void BinarySearchTree<T>::_remove(T value)
+{
+	BinaryTreeNode<T>* node = Super::Find(value);
+
+	if (node != nullptr)
+	{
+		if (node->GetNodesCount() == 0)
+		{
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, nullptr);
+			}
+			else
+			{
+				Super::m_root = nullptr;
+			}
+
+			delete node;
+		}
+		else if (node->GetNodesCount() == 1)
+		{
+			BinaryTreeNode<T>* child = node->Left != nullptr ? node->Left : node->Right;
+
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, child);
+			}
+			else
+			{
+				Super::m_root = child;
+			}
+
+			delete node;
+		}
+		else
+		{
+			BinaryTreeNode<T>* left = Super::FindDeepestLeft(node->Right);
+
+			if (left->IsLeaf())
+			{
+				if (left->Parent != nullptr)
+				{
+					left->Parent->SwitchNodes(left, nullptr);
+				}
+
+				node->Value = left->Value;
+
+				delete left;
+			}
+			else if (left->GetNodesCount() == 1)
+			{
+				BinaryTreeNode<T>* child = left->Left != nullptr ? left->Left : left->Right;
+
+				if (left->Parent != nullptr)
+				{
+					left->Parent->SwitchNodes(left, child);
+				}
+
+				node->Value = left->Value;
+
+				delete left;
+			}
+		}
+	}
 }

@@ -24,6 +24,8 @@ struct BinaryTreeNode
 
 	int Height = 0;
 
+	bool IsLeaf();
+
 	BinaryTreeNode* PushLeft(int value) { }
 };
 
@@ -46,6 +48,7 @@ public:
 	int GetHeight();
 
 	BinaryTreeNode<T>* FindDeepestLeaf();
+	BinaryTreeNode<T>* FindDeepestLeft(BinaryTreeNode<T>* fromNode);
 
 protected:
 
@@ -57,6 +60,7 @@ protected:
 	virtual BinaryTreeNode<T>* _find(BinaryTreeNode<T>* node, T value);
 	void _backpropagateHeight(BinaryTreeNode<T>* node);
 	void _findDeepestLeaf(BinaryTreeNode<T>* current, BinaryTreeNode<T>*& leaf, int depth, int& maxDepth);
+	virtual void _remove(T value);
 };
 
 template<typename T>
@@ -92,71 +96,7 @@ void BinaryTree<T>::Remove(T value)
 {
 	--m_size;
 
-	BinaryTreeNode<T>* node = Find(value);
-
-	if (node != nullptr)
-	{
-		if (node->GetNodesCount() == 0)
-		{
-			if (node->Parent != nullptr)
-			{
-				node->Parent->SwitchNodes(node, nullptr);
-			}
-			else
-			{
-				m_root = nullptr;
-			}
-
-			delete node;
-		}
-		else if (node->GetNodesCount() == 1)
-		{
-			BinaryTreeNode<T>* child = node->Left != nullptr ? node->Left : node->Right;
-
-			if (node->Parent != nullptr)
-			{
-				node->Parent->SwitchNodes(node, child);
-			}
-			else
-			{
-				m_root = child;
-			}
-
-			delete node;
-		}
-		else if (node->GetNodesCount() == 2)
-		{
-			// just replace with some leaf
-
-			BinaryTreeNode<T>* leaf = FindDeepestLeaf();
-
-			if (leaf->Parent != nullptr)
-			{
-				leaf->Parent->SwitchNodes(leaf, nullptr);
-			}
-
-			if (node->Parent != nullptr)
-			{
-				node->Parent->SwitchNodes(node, leaf);
-				leaf->Parent = node->Parent;
-			}
-			else
-			{
-				m_root = leaf;
-				leaf->Parent = nullptr;
-			}
-
-			if(node->Left != nullptr) node->Left->Parent = leaf;
-			if(node->Right != nullptr)	node->Right->Parent = leaf;
-
-
-			leaf->Left = node->Left;
-			leaf->Right = node->Right;
-
-			delete node;
-		}
-	}
-	// TODO
+	_remove(value);
 }
 
 template<typename T>
@@ -202,6 +142,12 @@ void BinaryTreeNode<T>::SwitchNodes(BinaryTreeNode<T>* node, BinaryTreeNode<T>* 
 }
 
 template<typename T>
+inline bool BinaryTreeNode<T>::IsLeaf()
+{
+	return Nodes[0] == nullptr && Nodes[1] == nullptr;
+}
+
+template<typename T>
  BinaryTreeNode<T>* BinaryTree<T>::FindDeepestLeaf()
 {
 	BinaryTreeNode<T>* leaf = m_root;
@@ -209,6 +155,19 @@ template<typename T>
 	_findDeepestLeaf(m_root, leaf, 0, maxDepth);
 	return leaf;
 }
+
+ template<typename T>
+ inline BinaryTreeNode<T>* BinaryTree<T>::FindDeepestLeft(BinaryTreeNode<T>* fromNode)
+ {
+	 BinaryTreeNode<T>* out = fromNode;
+
+	 while (out->Left != nullptr)
+	 {
+		 out = out->Left;
+	 }
+
+	 return out;
+ }
 
 template<typename T>
 void BinaryTree<T>::_traversal(BinaryTreeNode<T> * node, std::vector<BinaryTreeNode<T>*>& out)
@@ -286,6 +245,75 @@ void BinaryTree<T>::_findDeepestLeaf(BinaryTreeNode<T>* node, BinaryTreeNode<T>*
 				maxDepth = depth;
 				leaf = node;
 			}
+		}
+	}
+}
+
+template<typename T>
+inline void BinaryTree<T>::_remove(T value)
+{
+	BinaryTreeNode<T>* node = Find(value);
+
+	if (node != nullptr)
+	{
+		if (node->IsLeaf())
+		{
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, nullptr);
+			}
+			else
+			{
+				m_root = nullptr;
+			}
+
+			delete node;
+		}
+		else if (node->GetNodesCount() == 1)
+		{
+			BinaryTreeNode<T>* child = node->Left != nullptr ? node->Left : node->Right;
+
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, child);
+			}
+			else
+			{
+				m_root = child;
+			}
+
+			delete node;
+		}
+		else
+		{
+			// just replace with some leaf
+
+			BinaryTreeNode<T>* leaf = FindDeepestLeaf();
+
+			if (leaf->Parent != nullptr)
+			{
+				leaf->Parent->SwitchNodes(leaf, nullptr);
+			}
+
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, leaf);
+				leaf->Parent = node->Parent;
+			}
+			else
+			{
+				m_root = leaf;
+				leaf->Parent = nullptr;
+			}
+
+			if (node->Left != nullptr) node->Left->Parent = leaf;
+			if (node->Right != nullptr)	node->Right->Parent = leaf;
+
+
+			leaf->Left = node->Left;
+			leaf->Right = node->Right;
+
+			delete node;
 		}
 	}
 }
