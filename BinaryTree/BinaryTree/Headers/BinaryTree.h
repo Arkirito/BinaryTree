@@ -18,6 +18,10 @@ struct BinaryTreeNode
     #define Left Nodes[0]
     #define Right Nodes[1]
 
+	int GetNodesCount();
+
+	void SwitchNodes(BinaryTreeNode<T>*node, BinaryTreeNode<T>* child);
+
 	int Height = 0;
 
 	BinaryTreeNode* PushLeft(int value) { }
@@ -41,6 +45,8 @@ public:
 
 	int GetHeight();
 
+	BinaryTreeNode<T>* FindDeepestLeaf();
+
 protected:
 
 	BinaryTreeNode<T>* m_root = nullptr;
@@ -50,6 +56,7 @@ protected:
 	void _traversal(BinaryTreeNode<T>* node, std::vector<BinaryTreeNode<T>*>& out);
 	virtual BinaryTreeNode<T>* _find(BinaryTreeNode<T>* node, T value);
 	void _backpropagateHeight(BinaryTreeNode<T>* node);
+	void _findDeepestLeaf(BinaryTreeNode<T>* current, BinaryTreeNode<T>*& leaf, int depth, int& maxDepth);
 };
 
 template<typename T>
@@ -85,6 +92,70 @@ void BinaryTree<T>::Remove(T value)
 {
 	--m_size;
 
+	BinaryTreeNode<T>* node = Find(value);
+
+	if (node != nullptr)
+	{
+		if (node->GetNodesCount() == 0)
+		{
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, nullptr);
+			}
+			else
+			{
+				m_root = nullptr;
+			}
+
+			delete node;
+		}
+		else if (node->GetNodesCount() == 1)
+		{
+			BinaryTreeNode<T>* child = node->Left != nullptr ? node->Left : node->Right;
+
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, child);
+			}
+			else
+			{
+				m_root = child;
+			}
+
+			delete node;
+		}
+		else if (node->GetNodesCount() == 2)
+		{
+			// just replace with some leaf
+
+			BinaryTreeNode<T>* leaf = FindDeepestLeaf();
+
+			if (leaf->Parent != nullptr)
+			{
+				leaf->Parent->SwitchNodes(leaf, nullptr);
+			}
+
+			if (node->Parent != nullptr)
+			{
+				node->Parent->SwitchNodes(node, leaf);
+				leaf->Parent = node->Parent;
+			}
+			else
+			{
+				m_root = leaf;
+				leaf->Parent = nullptr;
+			}
+
+			if(node->Left != nullptr) node->Left->Parent = leaf;
+			if(node->Right != nullptr)	node->Right->Parent = leaf;
+
+
+			leaf->Left = node->Left;
+			leaf->Right = node->Right;
+
+			delete node;
+		}
+	}
 	// TODO
 }
 
@@ -103,9 +174,40 @@ void BinaryTree<T>::Traversal(std::vector<BinaryTreeNode<T>*>& out)
 }
 
 template<typename T>
-inline int BinaryTree<T>::GetHeight()
+int BinaryTree<T>::GetHeight()
 {
 	return m_root == nullptr ? 0 : m_root->Height;
+}
+
+template<typename T>
+void BinaryTreeNode<T>::SwitchNodes(BinaryTreeNode<T>* node, BinaryTreeNode<T>* child)
+{
+	if (node == Left)
+	{
+		Left = child;
+	}
+	else if (node == Right)
+	{
+		Right = child;
+	}
+	else
+	{
+		return;
+	}
+
+	if (child != nullptr)
+	{
+		child->Parent = this;
+	}
+}
+
+template<typename T>
+ BinaryTreeNode<T>* BinaryTree<T>::FindDeepestLeaf()
+{
+	BinaryTreeNode<T>* leaf = m_root;
+	int maxDepth = 0;
+	_findDeepestLeaf(m_root, leaf, 0, maxDepth);
+	return leaf;
 }
 
 template<typename T>
@@ -136,12 +238,14 @@ BinaryTreeNode<T>* BinaryTree<T>::_find(BinaryTreeNode<T>* node, T value)
 
 		if (node->Left != nullptr)
 		{
-			_find(node->Left, value);
+			BinaryTreeNode<T>* out = _find(node->Left, value);
+			if (out != nullptr) return out;
 		}
 
 		if (node->Right != nullptr)
 		{
-			_find(node->Right, value);
+			BinaryTreeNode<T>* out = _find(node->Right, value);
+			if (out != nullptr) return out;
 		}
 	}
 
@@ -149,7 +253,7 @@ BinaryTreeNode<T>* BinaryTree<T>::_find(BinaryTreeNode<T>* node, T value)
 }
 
 template<typename T>
-inline void BinaryTree<T>::_backpropagateHeight(BinaryTreeNode<T>* node)
+ void BinaryTree<T>::_backpropagateHeight(BinaryTreeNode<T>* node)
 {
 	BinaryTreeNode<T>* parent = node->Parent;
 
@@ -158,4 +262,41 @@ inline void BinaryTree<T>::_backpropagateHeight(BinaryTreeNode<T>* node)
 		++parent->Height;
 		parent = parent->Parent;
 	}
+}
+
+template<typename T>
+void BinaryTree<T>::_findDeepestLeaf(BinaryTreeNode<T>* node, BinaryTreeNode<T>*& leaf, int depth, int& maxDepth)
+{
+	if (node != nullptr)
+	{
+		if (node->Left != nullptr)
+		{
+			_findDeepestLeaf(node->Left, leaf, ++depth, maxDepth);
+		}
+
+		if (node->Right != nullptr)
+		{
+			_findDeepestLeaf(node->Right, leaf, ++depth, maxDepth);
+		}
+
+		if (node->Left == nullptr && node->Right == nullptr)
+		{
+			if (depth > maxDepth)
+			{
+				maxDepth = depth;
+				leaf = node;
+			}
+		}
+	}
+}
+
+template<typename T>
+ int BinaryTreeNode<T>::GetNodesCount()
+{
+	int count = 0;
+
+	if (Left != nullptr) ++count;
+	if (Right != nullptr) ++count;
+
+	return count;
 }

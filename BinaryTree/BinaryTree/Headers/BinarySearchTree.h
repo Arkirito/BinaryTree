@@ -32,6 +32,7 @@ template<typename T>
 BinarySearchTree<T>::BinarySearchTree(T value)
 {
 	this->m_root = new BinaryTreeNode<T>(value);
+	++this->m_size;
 }
 
 template<typename T>
@@ -45,7 +46,12 @@ void BinarySearchTree<T>::Insert(T value)
 {
 	Super::Insert(value);
 
-	_insert(this->m_root, value);
+	BinaryTreeNode<T>* node = Super::Find(value);
+
+	if (node == nullptr)
+	{
+		_insert(this->m_root, value);
+	}
 }
 
 template<typename T>
@@ -71,8 +77,6 @@ void BinarySearchTree<T>::_insert(BinaryTreeNode<T> * node, T value)
 	}
 	else
 	{
-		if (value == node->Value) return;
-
 		if (value > node->Value)
 		{
 			if (node->Right == nullptr)
@@ -111,13 +115,13 @@ inline BinaryTreeNode<T>* BinarySearchTree<T>::_find(BinaryTreeNode<T>* node, T 
 		{
 			return node;
 		}
-		else if (node->Value > value)
+		else if (value > node->Value)
 		{
 			if (node->Right != nullptr)
 			{
 				if (node->Right->Value == value) return node->Right;
 
-				_find(node->Right, value);
+				return _find(node->Right, value);
 			}
 		}
 		else
@@ -126,7 +130,7 @@ inline BinaryTreeNode<T>* BinarySearchTree<T>::_find(BinaryTreeNode<T>* node, T 
 			{
 				if (node->Left->Value == value) return node->Left;
 
-				_find(node->Left, value);
+				return _find(node->Left, value);
 			}
 		}
 	}
